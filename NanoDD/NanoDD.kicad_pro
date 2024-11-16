@@ -58,11 +58,7 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [
-        "silk_edge_clearance|167550800|101600000|1a0c7847-cd72-44c2-9472-5c5f3dc1c4fc|953b55c3-d361-4027-8b6a-f796691c16b6",
-        "silk_edge_clearance|168850800|101600000|1a0c7847-cd72-44c2-9472-5c5f3dc1c4fc|33946799-f211-40cb-8686-ef4b27a30fdc",
-        "silk_over_copper|175734000|95848000|bc190c19-b531-4c00-8ea6-617f469aadf5|00000000-0000-0000-0000-000000000000"
-      ],
+      "drc_exclusions": [],
       "meta": {
         "version": 2
       },
@@ -524,7 +520,7 @@
       "plot": "",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "NanoDD.step",
       "svg": "",
       "vrml": ""
     },

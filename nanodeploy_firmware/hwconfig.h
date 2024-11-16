@@ -8,12 +8,19 @@ Inline routines for setting up basic hardware functions.
 
 #include <msp430.h>
 
+#include "pins.h"
+
 inline void config_clock() {
     DCOCTL = 0; // Clear control register to select lowest possible clock
     BCSCTL1 = CALBC1_16MHZ; // Load factory offsets for 16MHz clock
     // Leaving BCSCTL2 = default (0) gives us DCO clock with no divider
     // BCSCTL3 = default is fine since it mostly cares about external oscillators
     DCOCTL = CALDCO_16MHZ; // Switch DCO to 16MHz
+}
+
+inline void config_io() {
+    // Enable output on LED pin
+    P1DIR = P_LED;
 }
 
 #endif
