@@ -1,3 +1,7 @@
+# CCS folders
+Debug/
+Release/
+
 # Prerequisites
 *.d
 

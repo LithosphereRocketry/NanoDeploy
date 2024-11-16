@@ -1,7 +1,0 @@
-[
-   {
-      "directory" : "/home/bry/Rocketry/NanoDeploy/nanodeploy_firmware/Debug",
-      "command"   : "clang++ -I\"/home/bry/ti/ccstheia151/ccs/ccs_base/msp430/include\" -I\"/home/bry/Rocketry/NanoDeploy/nanodeploy_firmware\" -I\"/home/bry/ti/ccstheia151/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430G2452__",
-      "file"      : "/home/bry/Rocketry/NanoDeploy/nanodeploy_firmware/main.c"
-   }
-]

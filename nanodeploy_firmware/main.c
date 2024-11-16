@@ -3,7 +3,7 @@
 
 #include "hwconfig.h"
 
-int1-64                    main(void) {
+int main(void) {
     config_clock();
 
     while(1) {
