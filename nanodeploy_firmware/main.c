@@ -6,6 +6,7 @@
 
 int main(void) {
     config_clock();
+    config_io();
 
     while(1) {
         uint32_t i;
