@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "Button_Switch_SMD_Custom")(type "KiCad")(uri "${KIPRJMOD}/Libraries/footprints/Button_Switch_SMD_Custom.pretty")(options "")(descr ""))
+)
