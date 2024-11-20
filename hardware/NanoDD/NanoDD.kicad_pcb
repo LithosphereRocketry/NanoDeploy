@@ -9614,6 +9614,30 @@
 			)
 		)
 	)
+	(gr_text "v1.0\n"
+		(at 174.399 93.02 0)
+		(layer "F.SilkS")
+		(uuid "23fdc5d7-c203-4936-a40f-564ecd84412b")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1524)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "Nano\nDeploy"
+		(at 175.768 97.028 0)
+		(layer "F.SilkS")
+		(uuid "3e61d146-3251-4876-a5e8-f22b9af785b1")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1524)
+			)
+			(justify left bottom)
+		)
+	)
 	(gr_text "+\n"
 		(at 163.1442 96.8756 0)
 		(layer "F.SilkS")
