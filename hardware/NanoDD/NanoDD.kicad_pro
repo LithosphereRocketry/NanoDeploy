@@ -58,9 +58,7 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [
-        "silk_over_copper|172779400|94698200|1b249a89-6981-4498-beac-2c2a8110a310|00000000-0000-0000-0000-000000000000"
-      ],
+      "drc_exclusions": [],
       "meta": {
         "version": 2
       },
@@ -231,7 +229,9 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [],
+    "erc_exclusions": [
+      "lib_symbol_issues|342900|1308100|cc90b68b-8941-4e48-baf6-13bf73e7925e|00000000-0000-0000-0000-000000000000|||"
+    ],
     "meta": {
       "version": 0
     },
