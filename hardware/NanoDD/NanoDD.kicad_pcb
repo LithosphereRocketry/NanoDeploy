@@ -3193,7 +3193,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Value" "270"
+		(property "Value" "75"
 			(at 0 -1.17 90)
 			(layer "B.Fab")
 			(uuid "be739dbb-7d10-4fb3-aa99-bce0c0bee1c9")
@@ -3258,7 +3258,7 @@
 				(justify mirror)
 			)
 		)
-		(property "LCSC" "C25155"
+		(property "LCSC" "C25133"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "B.Fab")
@@ -4015,6 +4015,34 @@
 				(justify mirror)
 			)
 		)
+		(property "LCSC" "C28646268"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "B.Fab")
+			(hide yes)
+			(uuid "69b44b07-27dd-4ea2-a45d-b013f50cd27d")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+				(justify mirror)
+			)
+		)
+		(property "JLCPCB_CORRECTION" "0;0;90"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "B.Fab")
+			(hide yes)
+			(uuid "a8e7b23c-e0a9-4a44-bec0-e24ed7487a99")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+				(justify mirror)
+			)
+		)
 		(path "/c0c6c7d3-395b-49a3-86d1-c00e21daaa19")
 		(sheetname "Root")
 		(sheetfile "NanoDD.kicad_sch")
@@ -4488,7 +4516,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Value" "270"
+		(property "Value" "75"
 			(at 0 -1.17 90)
 			(layer "B.Fab")
 			(uuid "3d22c957-67d5-4d23-bec1-ad514bd32e77")
@@ -4553,7 +4581,7 @@
 				(justify mirror)
 			)
 		)
-		(property "LCSC" "C25155"
+		(property "LCSC" "C25133"
 			(at 0 0 -90)
 			(unlocked yes)
 			(layer "B.Fab")
@@ -8930,7 +8958,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Value" "270"
+		(property "Value" "75"
 			(at 0 -1.17 90)
 			(layer "B.Fab")
 			(uuid "adadda97-552b-48c2-ae08-58c1667eed74")
@@ -8992,7 +9020,7 @@
 				(justify mirror)
 			)
 		)
-		(property "LCSC" "C25155"
+		(property "LCSC" "C25133"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "B.Fab")
@@ -9441,7 +9469,7 @@
 			)
 		)
 		(property "Value" "HL2302"
-			(at 0 -2.4 360)
+			(at 0 -2.4 0)
 			(layer "B.Fab")
 			(uuid "a8b3b73e-8662-44ca-becb-97542b3eb05d")
 			(effects
@@ -9489,6 +9517,34 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+				(justify mirror)
+			)
+		)
+		(property "LCSC" "C28646268"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "B.Fab")
+			(hide yes)
+			(uuid "9a2a2b6e-4035-473f-9856-41fcaf094e48")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+				(justify mirror)
+			)
+		)
+		(property "JLCPCB_CORRECTION" "0;0;90"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "B.Fab")
+			(hide yes)
+			(uuid "6bfc7e7e-7d2f-4af5-9bb6-849c1c4dc591")
+			(effects
+				(font
+					(size 1 1)
 					(thickness 0.15)
 				)
 				(justify mirror)
@@ -9641,7 +9697,7 @@
 			(uuid "ac4d8eb4-4bd4-4f04-a5c0-f14815998486")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "B.Fab")
 			(uuid "e678dc24-d930-438b-aa75-35ba0580a508")
 			(effects

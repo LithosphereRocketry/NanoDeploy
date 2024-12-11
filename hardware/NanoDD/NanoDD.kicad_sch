@@ -6794,7 +6794,7 @@
 				)
 			)
 		)
-		(property "Value" "270"
+		(property "Value" "75"
 			(at 232.41 58.42 90)
 			(effects
 				(font
@@ -6838,7 +6838,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25155"
+		(property "LCSC" "C25133"
 			(at 232.41 62.23 0)
 			(effects
 				(font
@@ -7408,6 +7408,24 @@
 			)
 		)
 		(property "Description" "N-MOSFET transistor, gate/source/drain"
+			(at 241.3 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C28646268"
+			(at 241.3 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCB_CORRECTION" "0;0;90"
 			(at 241.3 62.23 0)
 			(effects
 				(font
@@ -8554,7 +8572,7 @@
 				)
 			)
 		)
-		(property "Value" "270"
+		(property "Value" "75"
 			(at 232.41 106.68 90)
 			(effects
 				(font
@@ -8598,7 +8616,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25155"
+		(property "LCSC" "C25133"
 			(at 232.41 110.49 0)
 			(effects
 				(font
@@ -8773,6 +8791,24 @@
 			)
 		)
 		(property "Description" "N-MOSFET transistor, gate/source/drain"
+			(at 241.3 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C28646268"
+			(at 241.3 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCB_CORRECTION" "0;0;90"
 			(at 241.3 110.49 0)
 			(effects
 				(font
@@ -9347,7 +9383,7 @@
 		(fields_autoplaced yes)
 		(uuid "f127b571-4a44-464c-816a-55e9b16b5311")
 		(property "Reference" "R4"
-			(at 154.94 129.54 0)
+			(at 154.94 129.5399 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9355,8 +9391,8 @@
 				(justify right)
 			)
 		)
-		(property "Value" "270"
-			(at 154.94 132.08 0)
+		(property "Value" "75"
+			(at 154.94 132.0799 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9400,7 +9436,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25155"
+		(property "LCSC" "C25133"
 			(at 152.4 130.81 0)
 			(effects
 				(font
