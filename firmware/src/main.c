@@ -16,15 +16,17 @@ int main(void) {
     fcfg_read(buffers.flashbuf);
 
     uint8_t err = 0;
+    uint8_t blink = 0;
     uint32_t i;
     for(i = 0; i < 64; i++) {
-        if(buffers.flashbuf[i] != (i ^ ~i<<2)) {
+        if(buffers.flashbuf[i] != (uint8_t) (i ^ ~i<<2)) {
             err = 1;
             break;
         } // primitive hash function thing
     }
-    uint8_t blink = 0;
+    
     if(err) {
+        int32_t i;
         for(i = 0; i < 64; i++) {
             buffers.flashbuf[i] = i ^ ~i<<2;
         }
