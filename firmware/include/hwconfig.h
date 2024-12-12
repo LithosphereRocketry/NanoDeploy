@@ -25,8 +25,10 @@ inline void config_clock() {
 }
 
 inline void config_io() {
-    // Enable output on LED pin
-    P1DIR = P_LED;
+    P1DIR = P_LED; // Enable output on LED pin
+
+    P2DIR = P_BUZZER; // Enable output on buzzer
+    P2SEL = 0; // Disable crystal driver on port2
 }
 
 #endif

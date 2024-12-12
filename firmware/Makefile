@@ -5,7 +5,7 @@ GDB = msp430-gdb
 
 MSPDEBUG_MODE = tilib
 
-CFLAGS = -mmcu=$(MCU) -Wall -Wextra
+CFLAGS = -mmcu=$(MCU) -Wall -Wextra -O0
 
 SRC_DIR = src
 INC_DIR = include
@@ -31,10 +31,10 @@ $(RELEASE_DIR)/firmware.elf: $(DEBUG_OBJS) | $(RELEASE_DIR)
 	$(CC) $(CFLAGS) $(DEBUG_OBJS) -o $@
 
 $(DEBUG_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) | $(DEBUG_DIR)
-	$(CC) $(CFLAGS) -O0 -g3 -c $< -I$(INC_DIR) -o $@
+	$(CC) $(CFLAGS) -g3 -c $< -I$(INC_DIR) -o $@
 
 $(RELEASE_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) | $(RELEASE_DIR)
-	$(CC) $(CFLAGS) -O0 -c $< -I$(INC_DIR) -o $@
+	$(CC) $(CFLAGS) -c $< -I$(INC_DIR) -o $@
 
 $(DIRS): %:
 	mkdir -p $@

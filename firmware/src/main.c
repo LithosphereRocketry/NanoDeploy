@@ -1,13 +1,12 @@
 #include <stdint.h>
 #include <msp430.h>
+#include <iomacros.h>
 
+#include "common.h"
 #include "hwconfig.h"
 #include "pins.h"
 #include "flashcfg.h"
-
-union {
-    uint8_t flashbuf[64];
-} buffers;
+#include "tick.h"
 
 int main(void) {
     config_clock();
@@ -34,9 +33,20 @@ int main(void) {
         blink = P_LED;
     }
 
+    config_tick();
+    __eint();
+
     P1OUT = P_LED;
     while(1) {
-        for(i = 1000000; i > 0; i--) {}
-        P1OUT ^= blink;
+        __bis_SR_register(LPM0_bits); // Enter LPM0 sleep
+        // When we are woken:
+        if(wakeup & WAKE_TICK) { // Main run loop
+            switch(tone_pitch) {
+                // case 0xFF: tone_pitch = 0; break;
+                // case 0: tone_pitch = 1; break;
+                // default: tone_pitch = 0xFF; break;
+            }
+            wakeup &= ~WAKE_TICK;
+        }
     }
 }
