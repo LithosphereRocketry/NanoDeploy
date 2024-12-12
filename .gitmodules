@@ -1,0 +1,3 @@
+[submodule "firmware/external/msp430_usi_i2c"]
+	path = firmware/external/msp430_usi_i2c
+	url = git@github.com:LithosphereRocketry/msp430_usi_i2c.git
