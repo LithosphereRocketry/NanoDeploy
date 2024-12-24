@@ -1,4 +1,4 @@
 (sym_lib_table
   (version 7)
-  (lib (name "Sensor_Pressure_Custom")(type "KiCad")(uri "${KIPRJMOD}/Libraries/symbols/Sensor_Pressure_Custom.kicad_sym")(options "")(descr ""))
+  (lib (name "Sensor_Pressure_Custom")(type "KiCad")(uri "${KIPRJMOD}/../Libraries/symbols/Sensor_Pressure_Custom.kicad_sym")(options "")(descr ""))
 )

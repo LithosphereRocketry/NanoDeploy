@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "Interface_Custom")(type "KiCad")(uri "/home/bry/Rocketry/NanoDeploy/hardware/Libraries/symbols/Interface_Custom.kicad_sym")(options "")(descr ""))
+)

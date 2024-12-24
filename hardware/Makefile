@@ -2,7 +2,7 @@ PY = python3
 
 PCBDIR = .
 FABS = oshpark jlcpcb
-PCBS = NanoDD
+PCBS = NanoDD NanoProgrammer
 
 FABDIR = Output
 GRBDIR = Gerbers
@@ -27,7 +27,8 @@ $(FABDIR)/%-oshpark.zip: $(DRCDIR)/%.rpt | $(FABDIR) $(GRBDIR)/%
 .SECONDEXPANSION:
 $(FABDIR)/%-jlcpcb.zip: $(DRCDIR)/%.rpt $$*/$$*.kicad_sch | $(FABDIR) $(GRBDIR)/%
 	kikit fab jlcpcb $*/$*.kicad_pcb --assembly --missingError --schematic $*/$*.kicad_sch $(GRBDIR)/$*/
-	zip -ujr $(GRBDIR)/$*/gerbers.zip $(GRBDIR)/$*/bom.csv $(GRBDIR)/$*/pos.csv
+	cp $(GRBDIR)/$*/bom.csv $(FABDIR)/$*-bom-jlcpcb.csv
+	cp $(GRBDIR)/$*/pos.csv $(FABDIR)/$*-pos-jlcpcb.csv
 	mv $(GRBDIR)/$*/gerbers.zip $@
 
 .SECONDARY:
