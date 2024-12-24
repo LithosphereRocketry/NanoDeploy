@@ -51,13 +51,15 @@ int main(void) {
         __bis_SR_register(LPM0_bits); // Enter LPM0 sleep
         // When we are woken:
         if(wakeup & WAKE_TICK) { // Main run loop
-            gzp_get_data(&pres, &tmp);
+            gzp_get_raw_data(&pres, &tmp);
             gzp_request_read(GZP_OSR_PRES_128X, GZP_OSR_TEMP_8X);
             switch(tone_pitch) {
                 // case 0xFF: tone_pitch = 0; break;
                 // case 0: tone_pitch = 1; break;
                 // default: tone_pitch = 0xFF; break;
             }
+            P1OUT ^= P_PYRO_DROGUE | P_LED;
+            P2OUT ^= P_PYRO_MAIN;
             wakeup &= ~WAKE_TICK;
         }
     }

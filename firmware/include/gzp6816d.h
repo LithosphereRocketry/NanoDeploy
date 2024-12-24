@@ -25,6 +25,12 @@ void gzp_request_read(gzp_osr_pres_t pres_osr, gzp_osr_temp_t temp_osr);
 
 // Initiates a read request. Stalls until data is ready (minimum ~700us at
 // standard speed, maximum time dependant on oversample rate)
-void gzp_get_data(uint32_t* pressure, uint16_t* temperature);
+void gzp_get_raw_data(uint32_t* pressure, uint16_t* temperature);
+
+// Calculates altitude in meters from raw sensor readings to minimize precision
+// loss. Result is in integer meters - the sensor only has a relative accuracy
+// of 1m and maximum altitude of ~10km, so this shouldn't overflow for any
+// reasonable flight conditions.
+int16_t gzp_calc_alt_m(uint32_t base_pres, uint32_t raw_pres, uint16_t raw_temp);
 
 #endif

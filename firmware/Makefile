@@ -1,13 +1,12 @@
 MCU = msp430g2452
 
 CC = msp430-elf-gcc
-GDB = msp430-gdb
 
 MSPDEBUG_MODE = tilib
 
-CFLAGS = -mmcu=$(MCU) -Wall -Wextra -O2
+CFLAGS = -mmcu=$(MCU) -Wall -Wextra
 DBGFLAGS = -g3
-RLSFLAGS = 
+RLSFLAGS = -O2
 
 SRC_DIR = src
 INC_DIR = include
@@ -26,14 +25,10 @@ INLCUDE_DIRS = $(INC_DIR) $(LIB_DIR_I2C)
 
 INCLUDE_FLAGS = $(INLCUDE_DIRS:%=-I%)
 
-$(info $(LIB_SRCS))
-
 DEBUG_OBJS = $(SRCS:%.c=$(DEBUG_DIR)/%.o)
 RELEASE_OBJS = $(SRCS:%.c=$(RELEASE_DIR)/%.o)
 
 HEADERS = $(wildcard $(INC_DIR)/*.h) $(wildcard $(LIB_DIR_I2C)/*.h)
-
-$(info $(DEBUG_OBJS))
 
 .PHONY: clean run gdb size
 
@@ -65,7 +60,7 @@ gdb: $(DEBUG_DIR)/firmware.elf
 	mspdebug $(MSPDEBUG_MODE) "prog $<" "gdb"
 
 size: $(RELEASE_DIR)/firmware.elf
-	msp430-readelf -l $<
+	msp430-size $<
 
 clean:
 	rm -rf $(DIRS)

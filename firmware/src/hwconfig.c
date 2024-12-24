@@ -18,8 +18,10 @@ void config_clock() {
 }
 
 void config_io() {
-    P1DIR = P_LED; // Enable output on LED pin
+    P1OUT = 0;
+    P1DIR = P_LED | P_PYRO_DROGUE; // Enable outputs
 
-    P2DIR = P_BUZZER; // Enable output on buzzer
+    P2OUT = 0;
     P2SEL = 0; // Disable crystal driver on port2
+    P2DIR = P_PYRO_MAIN | P_BUZZER; // Enable outputs
 }

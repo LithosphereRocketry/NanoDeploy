@@ -44,7 +44,7 @@ void gzp_request_read(gzp_osr_pres_t pres_osr, gzp_osr_temp_t temp_osr) {
     i2c_send_sync(cmd_seq, cmd_len, 0, LPM0_bits);
 }
 
-void gzp_get_data(uint32_t* pressure, uint16_t* temperature) {
+void gzp_get_raw_data(uint32_t* pressure, uint16_t* temperature) {
     uint8_t readbuf[6];
     do {
         // if we plan well, this should be ready and waiting for us; otherwise
@@ -56,4 +56,11 @@ void gzp_get_data(uint32_t* pressure, uint16_t* temperature) {
               | ((uint32_t) readbuf[3]);
     *temperature = ((uint16_t) readbuf[4]) << 8
                  | ((uint16_t) readbuf[5]);
+}
+
+int16_t gzp_calc_alt_m(uint32_t base_pres, uint32_t raw_pres, uint16_t raw_temp) {
+    // Temperature isn't used yet bc idk how atmosphere worky
+    /**
+     * P = Pb * (1 - (Lmb/Tmb)*(h - hb))^((g0*M0) / (R*Lmb))
+     */
 }
