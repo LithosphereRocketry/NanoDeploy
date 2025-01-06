@@ -10,9 +10,12 @@
 #include "flashcfg.h"
 #include "tick.h"
 #include "gzp6816d.h"
+#include "atmosphere.h"
 
 uint16_t tmp;
-uint32_t pres;
+volatile uint32_t base_pres;
+volatile uint32_t pres;
+volatile uint16_t alt;
 
 int main(void) {
     config_clock();
@@ -43,6 +46,7 @@ int main(void) {
     __eint();
 
     P1OUT = P_LED;
+
     i2c_init(USIDIV_4, USISSEL_2); // SMCLK/16 = 1MHz fast+
 
     gzp_request_read(GZP_OSR_PRES_128X, GZP_OSR_TEMP_8X);
@@ -53,13 +57,17 @@ int main(void) {
         if(wakeup & WAKE_TICK) { // Main run loop
             gzp_get_raw_data(&pres, &tmp);
             gzp_request_read(GZP_OSR_PRES_128X, GZP_OSR_TEMP_8X);
+
+            uint32_t pressure = gzp_pressure_pa(pres);
+            volatile uint32_t altitude = atm_pressure_alt(pressure, 101325);
             switch(tone_pitch) {
                 // case 0xFF: tone_pitch = 0; break;
                 // case 0: tone_pitch = 1; break;
                 // default: tone_pitch = 0xFF; break;
             }
-            P1OUT ^= P_PYRO_DROGUE | P_LED;
-            P2OUT ^= P_PYRO_MAIN;
+            // P1OUT ^= P_PYRO_DROGUE | P_LED;
+            // P2OUT ^= P_PYRO_MAIN;
+            P1OUT ^= P_LED;
             wakeup &= ~WAKE_TICK;
         }
     }

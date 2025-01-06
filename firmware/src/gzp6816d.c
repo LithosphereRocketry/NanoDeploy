@@ -2,11 +2,22 @@
 
 #include <msp430.h>
 
+#include <math.h>
+
 #include "usi_i2c.h"
+#include "generated/gzp_div_conv.h"
 
 #define GZP6816_ADDR 0x78
 #define READ_BIT 1
 #define WRITE_BIT 0
+
+// From sensor datasheet:
+// Sensor range in Pa
+#define GZP6816_PMIN  30000
+#define GZP6816_PMAX 110000
+// Sensor ADC range
+#define GZP6816_DMIN  1677722
+#define GZP6816_DMAX 15099494
 
 #define SR_BUSY_FLAG BIT5
 
@@ -58,9 +69,8 @@ void gzp_get_raw_data(uint32_t* pressure, uint16_t* temperature) {
                  | ((uint16_t) readbuf[5]);
 }
 
-int16_t gzp_calc_alt_m(uint32_t base_pres, uint32_t raw_pres, uint16_t raw_temp) {
-    // Temperature isn't used yet bc idk how atmosphere worky
-    /**
-     * P = Pb * (1 - (Lmb/Tmb)*(h - hb))^((g0*M0) / (R*Lmb))
-     */
+uint32_t gzp_pressure_pa(uint32_t pres_raw) {
+    // return ((PMAX-PMIN)/(DMAX-DMIN)*(pres_raw-DMIN)+PMIN);
+    return div_conv(pres_raw - GZP6816_DMIN) + GZP6816_PMIN; // max 
+
 }
