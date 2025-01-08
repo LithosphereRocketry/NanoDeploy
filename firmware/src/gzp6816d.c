@@ -4,12 +4,10 @@
 
 #include <math.h>
 
-#include "usi_i2c.h"
+#include "i2c_helpers.h"
 #include "generated/gzp_div_conv.h"
 
 #define GZP6816_ADDR 0x78
-#define READ_BIT 1
-#define WRITE_BIT 0
 
 // From sensor datasheet:
 // Sensor range in Pa
@@ -23,27 +21,10 @@
 
 static const uint16_t read_seq[] = {
     GZP6816_ADDR << 1 | READ_BIT,
-    I2C_READ,
-    I2C_READ,
-    I2C_READ,
-    I2C_READ,
-    I2C_READ,
-    I2C_READ
+    I2C_READ_N
 };
-static const uint16_t read_len = sizeof(read_seq)/sizeof(uint16_t);
-
-// Synchronous i2c transaction send; waits in LPM0 until transaction is complete
-// Technically you can probably make things faster by interleaving i2c with
-// other things, but it shouldn't really matter here
-static void i2c_send_sync(uint16_t const * sequence, uint16_t sequence_length, uint8_t *received_data, uint16_t wakeup_sr_bits) {
-    i2c_send_sequence(sequence, sequence_length, received_data, wakeup_sr_bits);
-    do {
-        // Keep going back to sleep until the wakeup is i2c_send_sequence
-        // We'll accumulate a bit of an "inbox" this way but these
-        // transfers should be fast enough to be OK
-        __bis_SR_register(wakeup_sr_bits);
-    } while(!i2c_done());
-}
+// 6 read bytes, minus size of READ_N instruction
+static const uint16_t read_len = sizeof(read_seq)/sizeof(uint16_t) + 6 - 1;
 
 void gzp_request_read(gzp_osr_pres_t pres_osr, gzp_osr_temp_t temp_osr) {
     uint16_t cmd_seq[] = {
@@ -70,7 +51,5 @@ void gzp_get_raw_data(uint32_t* pressure, uint16_t* temperature) {
 }
 
 uint32_t gzp_pressure_pa(uint32_t pres_raw) {
-    // return ((PMAX-PMIN)/(DMAX-DMIN)*(pres_raw-DMIN)+PMIN);
-    return div_conv(pres_raw - GZP6816_DMIN) + GZP6816_PMIN; // max 
-
+    return div_conv(pres_raw - GZP6816_DMIN) + GZP6816_PMIN;
 }

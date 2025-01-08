@@ -17,10 +17,8 @@ static inline uint16_t mul_uxp16(uint16_t a, uint16_t b) {
     return (((uint32_t) a) * ((uint32_t) b)) >> 16;
 }
 
-static inline uint16_t as_uxp16_ratio(uint32_t n, uint32_t d) {
-    // Need to briefly bump into 64-bit here to make sure our 32-bit number
-    // shifted by 16 doesn't overflow
-    return (uint16_t) ((((uint64_t) n) << 16) / d);
+static inline uint16_t as_uxp16_ratio(uint16_t n, uint16_t d) {
+    return (uint16_t) ((((uint32_t) n) << 16) / d);
 }
 
 // See misc/baro_approx.py for derivation
@@ -28,7 +26,9 @@ static inline uint16_t as_uxp16_ratio(uint32_t n, uint32_t d) {
 uint16_t atm_pressure_alt(uint32_t pressure, uint32_t base_pressure) {
     if(pressure >= base_pressure) return 0; // we don't handle negative altitude
     uint32_t l = 0;
-    uint16_t one_minus_ppb = -as_uxp16_ratio(pressure, base_pressure);
+    // Our barometer is only accurate to 12 Pa, so losing one bit of precision
+    // to fit in a uint16_t is no big deal
+    uint16_t one_minus_ppb = -as_uxp16_ratio(pressure >> 1, base_pressure >> 1);
     uint16_t exp_val_l = one_minus_ppb;
     for(uint16_t i = 0; i < n_log; i++) {
         l += exp_val_l / (i+1);
