@@ -37,21 +37,21 @@ HEADERS = $(wildcard $(INC_DIR)/*.h) $(wildcard $(LIB_DIR_I2C)/*.h) $(INC_GEN_DI
 
 # Linker
 $(DEBUG_DIR)/firmware.elf: $(DEBUG_OBJS) | $(DEBUG_DIR)
-	$(CC) $(CFLAGS) $(DEBUG_OBJS) -o $@ -fdata-sections -Wl,--gc-sections
+	$(CC) $(CFLAGS) $(DEBUG_OBJS) -o $@
 $(RELEASE_DIR)/firmware.elf: $(DEBUG_OBJS) | $(RELEASE_DIR)
-	$(CC) $(CFLAGS) $(DEBUG_OBJS) -o $@ -fdata-sections -Wl,--gc-sections
+	$(CC) $(CFLAGS) $(DEBUG_OBJS) -o $@
 
 # Core source files
 $(DEBUG_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) | $(DEBUG_DIR)
-	$(CC) $(CFLAGS) $(DBGFLAGS) -c $< $(INCLUDE_FLAGS) -o $@ -fdata-sections -Wl,--gc-sections
+	$(CC) $(CFLAGS) $(DBGFLAGS) -c $< $(INCLUDE_FLAGS) -o $@
 $(RELEASE_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) | $(RELEASE_DIR)
-	$(CC) $(CFLAGS) $(RLSFLAGS) -c $< $(INCLUDE_FLAGS) -o $@ -fdata-sections -Wl,--gc-sections
+	$(CC) $(CFLAGS) $(RLSFLAGS) -c $< $(INCLUDE_FLAGS) -o $@
 
 # USI I2C library source files
 $(DEBUG_DIR)/%.o: $(LIB_DIR_I2C)/%.c $(HEADERS) | $(DEBUG_DIR)
-	$(CC) $(CFLAGS) $(DBGFLAGS) -c $< $(INCLUDE_FLAGS) -o $@ -fdata-sections -Wl,--gc-sections
+	$(CC) $(CFLAGS) $(DBGFLAGS) -c $< $(INCLUDE_FLAGS) -o $@
 $(RELEASE_DIR)/%.o: $(LIB_DIR_I2C)/%.c $(HEADERS) | $(RELEASE_DIR)
-	$(CC) $(CFLAGS) $(RLSFLAGS) -c $< $(INCLUDE_FLAGS) -o $@ -fdata-sections -Wl,--gc-sections
+	$(CC) $(CFLAGS) $(RLSFLAGS) -c $< $(INCLUDE_FLAGS) -o $@
 
 $(DIRS): %:
 	mkdir -p $@
