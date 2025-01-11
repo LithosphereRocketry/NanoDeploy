@@ -6,9 +6,9 @@ MKDIV = misc/make_divider.py
 
 MSPDEBUG_MODE = tilib
 
-CFLAGS = -mmcu=$(MCU) -Wall -Wextra -Wpedantic
-DBGFLAGS = -g3 -O2
-RLSFLAGS = -O2
+CFLAGS = -mmcu=$(MCU) -Wall -Wextra
+DBGFLAGS = -g3 -Os
+RLSFLAGS = -Os
 
 SRC_DIR = src
 INC_DIR = include

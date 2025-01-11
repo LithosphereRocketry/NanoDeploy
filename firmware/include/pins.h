@@ -6,6 +6,7 @@
 // Port 1
 #define P_PYRO_DROGUE BIT1
 #define P_LED BIT2
+#define P_OWI BIT4
 
 // Port 2
 #define P_PYRO_MAIN BIT6

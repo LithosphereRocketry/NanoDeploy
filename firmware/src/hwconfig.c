@@ -18,10 +18,13 @@ void config_clock() {
 }
 
 void config_io() {
-    P1OUT = 0;
+    P1OUT = P_LED;
     P1DIR = P_LED | P_PYRO_DROGUE; // Enable outputs
 
     P2OUT = 0;
     P2SEL = 0; // Disable crystal driver on port2
     P2DIR = P_PYRO_MAIN | P_BUZZER; // Enable outputs
+
+    P1IES = P_OWI; // Trigger pin interrupt on falling edge
+    P1IE = P_OWI; // Enable pin interrupt
 }

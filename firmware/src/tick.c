@@ -4,6 +4,7 @@
 #include <pins.h>
 
 #include "common.h"
+#include "onewire.h"
 
 void config_tick() {
     TA0CCR0 = 2000; // 16MHz/2000 = 8KHz
@@ -14,10 +15,13 @@ void config_tick() {
 }
 
 volatile uint8_t tone_pitch = 0xFF;
+volatile uint16_t perfcount = 0;
 
 __attribute__((interrupt(TIMER0_A0_VECTOR))) 
 static void isr_ta0(void) {
     static uint16_t tick_counter = 0;
+    perfcount ++;
+
     if(tick_counter == 0) {
         wakeup |= WAKE_TICK;
         __bic_SR_register_on_exit(LPM0_bits);

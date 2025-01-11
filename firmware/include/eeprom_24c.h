@@ -16,6 +16,9 @@
  * bytes starting at address 0x003C will write addresses 0x003C-0x003F and
  * 0x0000-0x0003.
  */
+static const size_t page_size = 64;
+static const size_t eeprom_size = 16384;
+
 void eep_write_page(uint8_t dev_sel, uint16_t addr, const uint8_t* data, size_t len);
 
 void eep_read(uint8_t dev_sel, uint16_t addr, uint8_t* data, size_t len);
