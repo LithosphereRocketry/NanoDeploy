@@ -22,10 +22,12 @@ static enum owi_state {
     STATE_OWI_SEARCH,
     STATE_OWI_SEARCH_CMPL,
     STATE_OWI_SEARCH_SEL,
+    STATE_OWI_SEND,
+    STATE_OWI_RECV
 } owi_state = STATE_OWI_OFF;
 
 static volatile uint8_t* volatile owi_buf;
-static volatile uint8_t owi_len;
+static volatile size_t owi_len;
 static volatile uint8_t owi_byte;
 
 static volatile uint8_t owi_bitcount;
@@ -44,7 +46,6 @@ static inline void stop_timer() {
 }
 
 void config_onewire() {
-    P1OUT &= ~P_LED;
     // Just to be paranoid, make sure we don't get interrupted while configuring
     // the state machine
     __dint();
@@ -59,20 +60,53 @@ void config_onewire() {
     __eint();
 }
 
+void owi_select() {
+    owi_state = STATE_OWI_CMD;
+    owi_bitcount = 8;
+}
+
 void owi_search(const uint8_t *rom) {
     // This part of the state machine should never write to the buffer, so
     // it should be safe to cast away const here
     // Just to be paranoid, make sure we don't get interrupted while configuring
     // the state machine
-    // __dint();
+    __dint();
     owi_buf = (volatile uint8_t*) rom;
     // Preload the first byte to save time in precise interrupts
     owi_bitcount = 8;
     owi_byte = *rom;
     owi_len = 8;
     // Make sure we don't have any issues with preexisting timer interrupts
-    stop_timer();
+    TA0CCTL1 = 0;
     owi_state = STATE_OWI_SEARCH;
+    __eint();
+}
+
+void owi_receive(volatile uint8_t* buf, size_t len) {
+    __dint();
+    owi_buf = buf;
+    owi_bitcount = 8;
+    owi_len = len;
+    // Make sure we don't have any issues with preexisting timer interrupts
+    TA0CCTL1 = 0;
+    owi_state = STATE_OWI_RECV;
+    __eint();
+}
+
+void owi_send(const uint8_t* buf, size_t len) {
+    // This part of the state machine should never write to the buffer, so
+    // it should be safe to cast away const here
+    // Just to be paranoid, make sure we don't get interrupted while configuring
+    // the state machine
+    __dint();
+    owi_buf = (volatile uint8_t*) buf;
+    // Preload the first byte to save time in precise interrupts
+    owi_bitcount = 8;
+    owi_byte = *buf;
+    owi_len = len;
+    // Make sure we don't have any issues with preexisting timer interrupts
+    TA0CCTL1 = 0;
+    owi_state = STATE_OWI_SEND;
     __eint();
 }
 
@@ -114,21 +148,21 @@ static inline __attribute__((always_inline)) void timer_done() {
         case STATE_OWI_SEARCH_CMPL:
             P1DIR &= ~P_OWI;
             owi_state = STATE_OWI_SEARCH_SEL;
-            P1OUT |= P_PYRO_DROGUE;
             break;
         case STATE_OWI_SEARCH_SEL:
             val = P1IN;
-            if((val & P_OWI) && (owi_byte & 0b1)
-            || !(val & P_OWI) && !(owi_byte & 0b1)) {
+            if(((val & P_OWI) && (owi_byte & 0b1))
+            || (!(val & P_OWI) && !(owi_byte & 0b1))) {
                 // This is the correct bit, so stay in the search
+                owi_bitcount --;
                 if(owi_bitcount == 0) {
-                    owi_buf ++;
                     owi_len --;
                     if(owi_len == 0) {
                         // We have no more bytes of address, so we're done
                         // Listen for the next command
                         owi_state = STATE_OWI_CMD;
                     } else {
+                        owi_buf ++;
                         owi_byte = *owi_buf;
                         owi_state = STATE_OWI_SEARCH;
                     }
@@ -136,14 +170,47 @@ static inline __attribute__((always_inline)) void timer_done() {
                     owi_bitcount = 8;
                 } else {
                     owi_byte >>= 1;
-                    owi_bitcount --;
                     owi_state = STATE_OWI_SEARCH;
                 }
             } else {
                 // Incorrect bit, drop out to idle
                 owi_state = STATE_OWI_IDLE;
             }
-            P1OUT &= ~P_PYRO_DROGUE;
+            break;
+        case STATE_OWI_SEND:
+            P1DIR &= ~P_OWI;
+            owi_bitcount --;
+            if(owi_bitcount == 0) {
+                owi_len --;
+                if(owi_len == 0) {
+                    owi_state = STATE_OWI_IDLE;
+                    wakeup |= WAKE_OWI_XFER;
+                    __bic_SR_register_on_exit(SLEEP_BITS);
+                } else {
+                    owi_buf ++;
+                    owi_byte = *owi_buf;
+                    owi_bitcount = 8;
+                }
+            } else {
+                owi_byte >>= 1;
+            }
+            break;
+        case STATE_OWI_RECV:
+            owi_byte >>= 1;
+            if(P1IN & P_OWI) owi_byte |= 0x80;
+            owi_bitcount --;
+            if(owi_bitcount == 0) {
+                *owi_buf = owi_byte;
+                owi_len --;
+                if(owi_len == 0) {
+                    owi_state = STATE_OWI_IDLE;
+                    wakeup |= WAKE_OWI_XFER;
+                    __bic_SR_register_on_exit(SLEEP_BITS);
+                } else {
+                    owi_buf ++;
+                    owi_bitcount = 8;
+                }
+            }
             break;
         default:
             break;
@@ -167,17 +234,18 @@ static inline __attribute__((always_inline)) void owi_rising() {
 }
 
 static inline __attribute__((always_inline)) void owi_falling() {
-    P2OUT ^= P_PYRO_MAIN;
     if(flight_state != STATE_PROG) {
         config_onewire();
     }
     switch(owi_state) {
         case STATE_OWI_CMD:
+        case STATE_OWI_RECV:
         case STATE_OWI_SEARCH_SEL:
             // Set timer for sample time
             TA0CCR1 = SAMPLE_TIME;
             TA0CCTL1 = CCIE;
             break;
+        case STATE_OWI_SEND:
         case STATE_OWI_SEARCH:
             // If we have 0 in this bit position, send 0
             if(!(owi_byte & 1)) {

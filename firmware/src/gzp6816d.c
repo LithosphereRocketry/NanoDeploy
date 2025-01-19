@@ -27,14 +27,20 @@ static const uint16_t read_seq[] = {
 // 6 read bytes, minus size of READ_N instruction
 static const uint16_t read_len = sizeof(read_seq)/sizeof(uint16_t) + 6 - 1;
 
-void gzp_request_read(gzp_osr_pres_t pres_osr, gzp_osr_temp_t temp_osr) {
+
+void gzp_request_read_comb(uint8_t combined_osr) {
     uint16_t cmd_seq[] = {
         GZP6816_ADDR << 1 | WRITE_BIT,
-        0xB0 | temp_osr | pres_osr
+        0xB0 | combined_osr
     };
     static const uint16_t cmd_len = sizeof(cmd_seq)/sizeof(uint16_t);
 
     i2c_send_sync(cmd_seq, cmd_len, 0, SLEEP_BITS);
+
+}
+
+void gzp_request_read(gzp_osr_pres_t pres_osr, gzp_osr_temp_t temp_osr) {
+    gzp_request_read_comb(temp_osr | pres_osr);
 }
 
 void gzp_get_raw_data(uint32_t* pressure, uint16_t* temperature) {

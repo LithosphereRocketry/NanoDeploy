@@ -29,13 +29,23 @@ Alarm scan tag: tag byte 3
 Command byte and length ignored. Performs a scan of the bus with alarm flag
 filter set. If a device is present, returns a nonzero byte, followed by the
 8-byte address of the device. If no device is present, returns a zero byte.
+
+Reset tag: tag byte 4
+Command byte and length ignored. Resets all devices on the bus without
+initiating a scan. If a device is present, returns a nonzero byte, otherwise
+returns a zero byte.
+
+Reset scan tag: tag byte 5
+Command byte and length ignored. Restarts the scan algorithm.
 */
 
 enum {
   TAG_READ = 0,
   TAG_WRITE = 1,
   TAG_SCAN = 2,
-  TAG_ALARM = 3
+  TAG_ALARM = 3,
+  TAG_RESET = 4,
+  TAG_RSSC = 5
 };
 
 OneWire owi(14);
@@ -47,13 +57,6 @@ const uint8_t null_rom[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 void setup() {
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
-
-  while(1) {
-    owi.reset_search();
-    owi.search(data_buf);
-    delay(100);
-    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-  }
 }
 
 void loop() {
@@ -91,6 +94,12 @@ void loop() {
       } else {
         Serial.write((uint8_t) 0);
       }
+      break;
+    case TAG_RESET:
+      Serial.write((uint8_t) owi.reset());
+      break;
+    case TAG_RSSC:
+      owi.reset_search();
       break;
   }
   digitalWrite(LED_BUILTIN, LOW);

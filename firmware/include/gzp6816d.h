@@ -22,6 +22,8 @@ typedef enum {
 // Initiates a read request. Stalls for duration of I2C transaction (~200us at
 // standard speed)
 void gzp_request_read(gzp_osr_pres_t pres_osr, gzp_osr_temp_t temp_osr);
+// Equivalent, but the two values above are already bitwise-or'ed
+void gzp_request_read_comb(uint8_t combined_osr);
 
 // Initiates a read request. Stalls until data is ready (minimum ~700us at
 // standard speed, maximum time dependant on oversample rate)

@@ -10,7 +10,8 @@
 
 extern volatile enum wake_reason {
     WAKE_TICK = 1<<0,
-    WAKE_OWI_CMD = 1<<1
+    WAKE_OWI_CMD = 1<<1,
+    WAKE_OWI_XFER = 1<<2
 } wakeup;
 
 extern enum state {

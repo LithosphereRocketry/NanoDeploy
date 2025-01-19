@@ -4,6 +4,9 @@
 #include "common.h"
 
 enum onewire_command {
+    OWI_CMD_READ = 0x33,
+    OWI_CMD_SKIP = 0xCC,
+    OWI_CMD_MATCH = 0x55,
     OWI_CMD_SEARCH = 0xF0
 };
 
@@ -35,15 +38,15 @@ void owi_select();
 void owi_search(const uint8_t* rom);
 
 /**
- * Receive len bytes from the OWI bus into buf. On completion, clear processor
- * status flags lpm_flags and flag the wakeup reason as WAKE_OWI_CMD.
+ * Receive len bytes from the OWI bus into buf. On completion, wake up the
+ * processor and flag the wakeup reason as WAKE_OWI_CMD.
  */
-// void owi_receive(volatile uint8_t* buf, size_t len, uint8_t lpm_flags);
+void owi_receive(volatile uint8_t* buf, size_t len);
 
 /**
- * Send len bytes from buf to the OWI bus. On completion, clear processor status
- * flags lpm_flags and flag the wakeup reason as WAKE_OWI_CMD.
+ * Send len bytes from buf to the OWI bus. On completion, wake up the processor
+ * and flag the wakeup reason as WAKE_OWI_CMD.
  */
-// void owi_send(const uint8_t* buf, size_t len, uint8_t lpm_flags);
+void owi_send(const uint8_t* buf, size_t len);
 
 #endif
