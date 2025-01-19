@@ -24,7 +24,7 @@ static void isr_ta0(void) {
 
     if(tick_counter == 0) {
         wakeup |= WAKE_TICK;
-        __bic_SR_register_on_exit(LPM0_bits);
+        __bic_SR_register_on_exit(SLEEP_BITS);
         tick_counter = 7999; // 1 Hz
     } else {
         tick_counter--;

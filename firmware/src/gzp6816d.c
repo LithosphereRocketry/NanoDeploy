@@ -4,6 +4,7 @@
 
 #include <math.h>
 
+#include "common.h"
 #include "i2c_helpers.h"
 #include "generated/gzp_div_conv.h"
 
@@ -33,7 +34,7 @@ void gzp_request_read(gzp_osr_pres_t pres_osr, gzp_osr_temp_t temp_osr) {
     };
     static const uint16_t cmd_len = sizeof(cmd_seq)/sizeof(uint16_t);
 
-    i2c_send_sync(cmd_seq, cmd_len, 0, LPM0_bits);
+    i2c_send_sync(cmd_seq, cmd_len, 0, SLEEP_BITS);
 }
 
 void gzp_get_raw_data(uint32_t* pressure, uint16_t* temperature) {
@@ -41,7 +42,7 @@ void gzp_get_raw_data(uint32_t* pressure, uint16_t* temperature) {
     do {
         // if we plan well, this should be ready and waiting for us; otherwise
         // keep re-requesting until it is
-        i2c_send_sync(read_seq, read_len, readbuf, LPM0_bits);
+        i2c_send_sync(read_seq, read_len, readbuf, SLEEP_BITS);
     } while(readbuf[0] & SR_BUSY_FLAG);
     *pressure = ((uint32_t) readbuf[1]) << 16
               | ((uint32_t) readbuf[2]) << 8

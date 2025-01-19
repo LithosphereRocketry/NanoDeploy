@@ -3,6 +3,10 @@
 
 #include "common.h"
 
+enum onewire_command {
+    OWI_CMD_SEARCH = 0xF0
+};
+
 /**
  * Puts state machine in onewire mode, disabling flight logic. This will happen
  * automatically if the OWI pin is pulled low, or it can be done via this
@@ -12,20 +16,33 @@
 void config_onewire();
 
 /**
- * Command received by OneWire bus. If processor is woken with reason WAKE_OWI,
- * it should check here to see what command was requested.
+ * Command received by OneWire bus. If processor is woken with reason
+ * WAKE_OWI_CMD, it should check here to see what command was requested.
  */
 extern volatile uint8_t owi_cmd;
 
 /**
+ * Make the OneWire interface ready to accept another command.
+ */
+void owi_select();
+
+
+/**
+ * Start a OneWire search with the specified array as the 8-byte ROM value. On
+ * success, goes into command-waiting mode; on failure, goes into idle and waits
+ * for bus reset
+ */
+void owi_search(const uint8_t* rom);
+
+/**
  * Receive len bytes from the OWI bus into buf. On completion, clear processor
- * status flags lpm_flags and flag the wakeup reason as WAKE_OWI.
+ * status flags lpm_flags and flag the wakeup reason as WAKE_OWI_CMD.
  */
 // void owi_receive(volatile uint8_t* buf, size_t len, uint8_t lpm_flags);
 
 /**
  * Send len bytes from buf to the OWI bus. On completion, clear processor status
- * flags lpm_flags and flag the wakeup reason as WAKE_OWI.
+ * flags lpm_flags and flag the wakeup reason as WAKE_OWI_CMD.
  */
 // void owi_send(const uint8_t* buf, size_t len, uint8_t lpm_flags);
 

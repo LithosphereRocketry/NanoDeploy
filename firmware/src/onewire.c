@@ -4,70 +4,220 @@
 
 #include "pins.h"
 
+#define CYCLES_US 16 // 16MHz timer clock
+
+#define RESET_TIME (400 * CYCLES_US)
+#define PPULSE_DELAY (15 * CYCLES_US)
+#define PPULSE_TIME (120 * CYCLES_US)
+#define SAMPLE_TIME (15 * CYCLES_US)
+#define TRANSMIT_TIME (40 * CYCLES_US)
+
 static enum owi_state {
+    // Idle and startup/reset
     STATE_OWI_OFF,
     STATE_OWI_IDLE,
-    STATE_OWI_PRE_RESET,
     STATE_OWI_RESET,
-    STATE_OWI_READY,
-    STATE_OWI_CMD
+    STATE_OWI_PPULSE,
+    STATE_OWI_CMD,
+    STATE_OWI_SEARCH,
+    STATE_OWI_SEARCH_CMPL,
+    STATE_OWI_SEARCH_SEL,
 } owi_state = STATE_OWI_OFF;
 
 static volatile uint8_t* volatile owi_buf;
 static volatile uint8_t owi_len;
+static volatile uint8_t owi_byte;
 
 static volatile uint8_t owi_bitcount;
 
 volatile uint8_t owi_cmd;
 
-#define OWI_TA0_MODE (TASSEL_2 | ID_0)
+#define OWI_TA0_MODE (TASSEL_2 | ID_0 | TAIE)
+
+static inline void start_timer() {
+    TA0R = 0;
+    TA0CTL = OWI_TA0_MODE | MC_2;
+}
+
+static inline void stop_timer() {
+    TA0CTL = OWI_TA0_MODE | MC_0;
+}
 
 void config_onewire() {
+    P1OUT &= ~P_LED;
+    // Just to be paranoid, make sure we don't get interrupted while configuring
+    // the state machine
+    __dint();
     flight_state = STATE_PROG;
     owi_state = STATE_OWI_IDLE;
 
     TA0CTL = OWI_TA0_MODE | MC_0; // Make timer stopped
-    TA0CCTL1 = CCIE;
+    // Don't enable CC interrupts yet, we'll enable that per-state-transition as
+    // not all need it
+    // Set up reset watchdog
+    TA0CCR2 = RESET_TIME;
+    __eint();
 }
 
-static inline void start_oneshot(uint16_t cycles) {
-    TA0CCR1 = cycles;
-    TAR = 0;
-    TA0CTL = OWI_TA0_MODE | MC_2;
+void owi_search(const uint8_t *rom) {
+    // This part of the state machine should never write to the buffer, so
+    // it should be safe to cast away const here
+    // Just to be paranoid, make sure we don't get interrupted while configuring
+    // the state machine
+    // __dint();
+    owi_buf = (volatile uint8_t*) rom;
+    // Preload the first byte to save time in precise interrupts
+    owi_bitcount = 8;
+    owi_byte = *rom;
+    owi_len = 8;
+    // Make sure we don't have any issues with preexisting timer interrupts
+    stop_timer();
+    owi_state = STATE_OWI_SEARCH;
+    __eint();
 }
 
-// void owi_receive(volatile uint8_t *buf, size_t len, uint8_t lpm_flags) {
-//     owi_buf = (volatile uint8_t* volatile) buf;
-//     owi_len = len;
-//     owi_bitcount = 8;
-// }
+static inline __attribute__((always_inline)) void timer_done() {
+
+    uint8_t val;
+    switch(owi_state) {
+        case STATE_OWI_RESET:
+            // Presence pulse start
+            P1DIR |= P_OWI;
+            // This should trigger a falling edge on P_OWI, restarting the timer
+            // so set up the timer for the end of the presence pulse
+            TA0CCTL1 = CCIE;
+            TA0CCR1 = PPULSE_TIME;
+            owi_state = STATE_OWI_PPULSE;
+            break;
+        case STATE_OWI_PPULSE:
+            // Presence pulse end
+            P1DIR &= ~P_OWI;
+            TA0CCTL1 = 0;
+            owi_state = STATE_OWI_CMD;
+            owi_bitcount = 8; // preload bitcount
+            break;
+        case STATE_OWI_CMD:
+            owi_byte >>= 1;
+            if(P1IN & P_OWI) owi_byte |= 0x80;
+            owi_bitcount --;
+            if(owi_bitcount == 0) {
+                owi_state = STATE_OWI_IDLE;
+                owi_cmd = owi_byte;
+                wakeup |= WAKE_OWI_CMD;
+                __bic_SR_register_on_exit(SLEEP_BITS);   
+            }
+            break;
+        case STATE_OWI_SEARCH:
+            P1DIR &= ~P_OWI;
+            owi_state = STATE_OWI_SEARCH_CMPL;
+            break;
+        case STATE_OWI_SEARCH_CMPL:
+            P1DIR &= ~P_OWI;
+            owi_state = STATE_OWI_SEARCH_SEL;
+            P1OUT |= P_PYRO_DROGUE;
+            break;
+        case STATE_OWI_SEARCH_SEL:
+            val = P1IN;
+            if((val & P_OWI) && (owi_byte & 0b1)
+            || !(val & P_OWI) && !(owi_byte & 0b1)) {
+                // This is the correct bit, so stay in the search
+                if(owi_bitcount == 0) {
+                    owi_buf ++;
+                    owi_len --;
+                    if(owi_len == 0) {
+                        // We have no more bytes of address, so we're done
+                        // Listen for the next command
+                        owi_state = STATE_OWI_CMD;
+                    } else {
+                        owi_byte = *owi_buf;
+                        owi_state = STATE_OWI_SEARCH;
+                    }
+                    // Regardless, we expect 8 bits of transfer
+                    owi_bitcount = 8;
+                } else {
+                    owi_byte >>= 1;
+                    owi_bitcount --;
+                    owi_state = STATE_OWI_SEARCH;
+                }
+            } else {
+                // Incorrect bit, drop out to idle
+                owi_state = STATE_OWI_IDLE;
+            }
+            P1OUT &= ~P_PYRO_DROGUE;
+            break;
+        default:
+            break;
+    }
+}
+
+static inline __attribute__((always_inline)) void owi_rising() {
+    switch(owi_state) {
+        case STATE_OWI_RESET:
+            // Prepare to send a presence pulse in the future
+            // We keep the timer rolling from the descending edge for
+            // consistency, so calculate what time we want based on current time
+            TA0CCR1 = TA0R + PPULSE_DELAY;
+            TA0CCTL1 = CCIE;
+            break;
+        default:
+            break;
+    }
+
+    TA0CCTL2 = 0; // Switch off reset timer    
+}
+
+static inline __attribute__((always_inline)) void owi_falling() {
+    P2OUT ^= P_PYRO_MAIN;
+    if(flight_state != STATE_PROG) {
+        config_onewire();
+    }
+    switch(owi_state) {
+        case STATE_OWI_CMD:
+        case STATE_OWI_SEARCH_SEL:
+            // Set timer for sample time
+            TA0CCR1 = SAMPLE_TIME;
+            TA0CCTL1 = CCIE;
+            break;
+        case STATE_OWI_SEARCH:
+            // If we have 0 in this bit position, send 0
+            if(!(owi_byte & 1)) {
+                P1DIR |= P_OWI;
+            }
+            TA0CCR1 = TRANSMIT_TIME;
+            TA0CCTL1 = CCIE;
+            break;
+        case STATE_OWI_SEARCH_CMPL:
+            // If we have 1 in this bit position, send 0
+            if(owi_byte & 1) {
+                P1DIR |= P_OWI;
+            }
+            TA0CCR1 = TRANSMIT_TIME;
+            TA0CCTL1 = CCIE;
+            break;
+        default:
+            break;
+    }
+    TA0CCTL2 = CCIE; // Enable reset timer
+    start_timer();
+}
 
 __attribute__((interrupt(TIMER0_A1_VECTOR))) 
 static void isr_taiv() {
-    TA0IV = 0; // manually clear TAIV flag
-    TA0CTL = OWI_TA0_MODE | MC_0; // Stop timer
-
-    switch(owi_state) {
-        case STATE_OWI_PRE_RESET:
-            // reset pulse is long enough
+    switch(TA0IV) {
+        case TA0IV_TACCR1:
+            TA0CCR1 = 0; // CCR1 flag received, switch it off
+            timer_done();
+            break;
+        case TA0IV_TACCR2:
+            // If we reach CCR2, that means the pulse is long enough to be a
+            // reset
+            TA0CCTL1 = 0; // turn off any existing oneshot
             owi_state = STATE_OWI_RESET;
             break;
-        case STATE_OWI_RESET:
-            // end presence pulse
-            P1DIR &= ~P_OWI;
-            // Prepare to read command
-            owi_bitcount = 8;
-            owi_state = STATE_OWI_CMD;
-            break;
-        case STATE_OWI_CMD:
-            // Sample incoming data
-            owi_cmd >>= 1;
-            owi_cmd |= ((P1IN & P_OWI) ? (1 << 7) : 0);
-            owi_bitcount --;
-            if(owi_bitcount == 0) {
-                NOP;
-            }
-            break;
+        case TA0IV_TAIFG:
+            // Make the timer effectively a one-shot by stopping it if it ever
+            // wraps around
+            stop_timer();
         default:
             break;
     }
@@ -75,37 +225,19 @@ static void isr_taiv() {
 
 __attribute__((interrupt(PORT1_VECTOR)))
 static void isr_port1() {
-    switch(owi_state) {
-        case STATE_OWI_OFF:
-            config_onewire();
-            // intentional fallthrough
-        case STATE_OWI_IDLE:
-            // Trigger CCR1 at 410 us (close enough to 480)
-            start_oneshot(410*16);
-            
-            P1IES &= ~P_OWI; // trigger on positive edge
-            owi_state = STATE_OWI_PRE_RESET;
-            break;
-        case STATE_OWI_PRE_RESET:
-            // Reset pulse was too short, take it from the top
-            owi_state = STATE_OWI_IDLE;
-            P1IES |= P_OWI; // back to negative edge
-            break;
-        case STATE_OWI_RESET:
-            // Successfully reset
-            P1DIR |= P_OWI; // produce presence pulse
-            P1IES |= P_OWI; // back to negative edge
-
-            // Start timer for 70us presence pulse (min 60us)
-            start_oneshot(70*16);
-            break;
-        // States that sample the input all do the same thing
-        case STATE_OWI_CMD:
-            // Sample at 15 us
-            start_oneshot(15*16);
-            break;
-        default:
-            break;
-    }
+    // Store which edge this was and immediately clear the interrupt to make
+    // sure we don't miss anything on very quickly repeating pulses
+    uint8_t p1val = P1IES;
+    P1IES = P1IN;
     P1IFG &= ~P_OWI;
+
+    // Now that we have time to breathe (and more interrupts can come in) handle
+    // the actual work of the interrupt
+    if(p1val & P_OWI) {
+        owi_falling();
+    } else {
+        owi_rising();
+    }
+
+    return;
 }
