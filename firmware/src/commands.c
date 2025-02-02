@@ -41,15 +41,16 @@ void owi_command() {
         case DEV_CMD_READ:
             owi_send(databuf, 64);
             xfer_done_event = XFER_RESELECT;
+            break;
         case DEV_CMD_MEASURE:
             gzp_request_read(GZP_OSR_PRES_128X, GZP_OSR_TEMP_8X);
-            for(int i = 0; i < 10000; i++) NOP;
             gzp_get_raw_data(&meas_buf->pres, &meas_buf->temp);
             meas_buf->pres = gzp_pressure_pa(meas_buf->pres);
             meas_buf->alt = atm_pressure_alt(meas_buf->pres, 101325);
             owi_select();
             break;
         default:
+            NOP;
             break;
     }
 }

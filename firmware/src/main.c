@@ -29,8 +29,6 @@ int main(void) {
 
     __eint();
 
-    P1OUT = P_LED;
-
     i2c_init(USIDIV_4, USISSEL_2); // SMCLK/16 = 1MHz Fast+
 
     gzp_request_read(GZP_OSR_PRES_128X, GZP_OSR_TEMP_8X);

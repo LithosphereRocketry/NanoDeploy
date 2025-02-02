@@ -4,7 +4,7 @@
 
 #include "pins.h"
 
-#define CYCLES_US 16 // 16MHz timer clock
+#define CYCLES_US 4 // 16MHz timer clock
 
 #define RESET_TIME (400 * CYCLES_US)
 #define PPULSE_DELAY (15 * CYCLES_US)
@@ -34,7 +34,7 @@ static volatile uint8_t owi_bitcount;
 
 volatile uint8_t owi_cmd;
 
-#define OWI_TA0_MODE (TASSEL_2 | ID_0 | TAIE)
+#define OWI_TA0_MODE (TASSEL_2 | ID_2 | TAIE)
 
 static inline void start_timer() {
     TA0R = 0;
@@ -51,8 +51,9 @@ void config_onewire() {
     __dint();
     flight_state = STATE_PROG;
     owi_state = STATE_OWI_IDLE;
+    TA0CCTL0 = 0; // Turn off flight ticks
 
-    TA0CTL = OWI_TA0_MODE | MC_0; // Make timer stopped
+    stop_timer();
     // Don't enable CC interrupts yet, we'll enable that per-state-transition as
     // not all need it
     // Set up reset watchdog
@@ -271,9 +272,10 @@ static inline __attribute__((always_inline)) void owi_falling() {
 
 __attribute__((interrupt(TIMER0_A1_VECTOR))) 
 static void isr_taiv() {
-    switch(TA0IV) {
+    uint8_t iv = TA0IV;
+    switch(iv) {
         case TA0IV_TACCR1:
-            TA0CCR1 = 0; // CCR1 flag received, switch it off
+            TA0CCTL1 = 0; // CCR1 flag received, switch it off
             timer_done();
             break;
         case TA0IV_TACCR2:
@@ -286,6 +288,7 @@ static void isr_taiv() {
             // Make the timer effectively a one-shot by stopping it if it ever
             // wraps around
             stop_timer();
+            break;
         default:
             break;
     }
