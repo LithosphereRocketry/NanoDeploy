@@ -247,7 +247,6 @@ def make_divider(d, bits):
         q = m*n >> bits
         t = (((n - q) >> 1) + q) >> (p-1)
         return t
-
     return divider
 
 div_k = make_divider(ATM.K, 32)

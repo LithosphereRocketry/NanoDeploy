@@ -15,8 +15,14 @@ extern volatile enum wake_reason {
 } wakeup;
 
 extern enum state {
-    STATE_READY = 0,
-    STATE_PROG
+    STATE_CALIB,
+    STATE_READY,
+    STATE_PROG,
+    STATE_BOOST,
+    STATE_COAST,
+    STATE_DESCENT,
+    STATE_MAIN,
+    STATE_LANDED
 } flight_state;
 
 extern uint8_t databuf[64];

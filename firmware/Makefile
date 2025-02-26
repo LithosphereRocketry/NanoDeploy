@@ -3,6 +3,7 @@ MCU = msp430g2452
 CC = msp430-elf-gcc
 
 MKDIV = misc/make_divider.py
+MKKALMAN = misc/make_kalman.py
 
 MSPDEBUG_MODE = tilib
 
@@ -31,7 +32,7 @@ INCLUDE_FLAGS = $(INLCUDE_DIRS:%=-I%)
 DEBUG_OBJS = $(SRCS:%.c=$(DEBUG_DIR)/%.o)
 RELEASE_OBJS = $(SRCS:%.c=$(RELEASE_DIR)/%.o)
 
-HEADERS = $(wildcard $(INC_DIR)/*.h) $(wildcard $(LIB_DIR_I2C)/*.h) $(INC_GEN_DIR)/atm_div_k.h $(INC_GEN_DIR)/atm_div_tl.h $(INC_GEN_DIR)/gzp_div_conv.h
+HEADERS = $(wildcard $(INC_DIR)/*.h) $(wildcard $(LIB_DIR_I2C)/*.h) $(INC_GEN_DIR)/atm_div_k.h $(INC_GEN_DIR)/atm_div_tl.h $(INC_GEN_DIR)/gzp_div_conv.h $(INC_GEN_DIR)/kalman_step.h
 
 .PHONY: clean run gdb size generated
 
@@ -68,6 +69,9 @@ $(INC_GEN_DIR)/atm_div_tl.h: $(MKDIV) | $(INC_GEN_DIR)
 # (DMAX-DMIN) / (PMAX-PMIN) for GZP6816D conversion
 $(INC_GEN_DIR)/gzp_div_conv.h: $(MKDIV) | $(INC_GEN_DIR)
 	$< -o $@ -n div_conv -b 32 `python3 -c "print((15099494 - 1677722)/(110000 - 30000))"`
+$(INC_GEN_DIR)/kalman_step.h: $(MKKALMAN) $(MKDIV) | $(INC_GEN_DIR)
+	python3 $< $@
+
 
 run: $(RELEASE_DIR)/firmware.elf
 	mspdebug $(MSPDEBUG_MODE) "prog $(RELEASE_DIR)/firmware.elf"

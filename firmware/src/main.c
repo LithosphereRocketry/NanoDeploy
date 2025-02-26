@@ -4,24 +4,12 @@
 #include <iomacros.h>
 
 #include "usi_i2c.h"
-
 #include "common.h"
-#include "onewire.h"
 #include "hwconfig.h"
-#include "pins.h"
-#include "params.h"
 #include "tick.h"
-#include "gzp6816d.h"
-#include "eeprom_24c.h"
-#include "atmosphere.h"
 #include "commands.h"
-
-uint16_t tmp;
-volatile uint32_t base_pres;
-volatile uint32_t pres;
-volatile uint16_t alt;
-
-static uint8_t err;
+#include "flight_logic.h"
+#include "gzp6816d.h"
 
 int main(void) {
     config_clock();
@@ -31,7 +19,7 @@ int main(void) {
 
     i2c_init(USIDIV_4, USISSEL_2); // SMCLK/16 = 1MHz Fast+
 
-    gzp_request_read(GZP_OSR_PRES_128X, GZP_OSR_TEMP_8X);
+    gzp_request_read(GZP_OSR_PRES_8X, GZP_OSR_TEMP_4X);
 
     __dint();
     config_tick();
@@ -48,14 +36,7 @@ int main(void) {
                 owi_transfer();
                 wakeup &= ~WAKE_OWI_XFER;
             } else if(wakeup & WAKE_TICK) { // Main run loop
-                gzp_get_raw_data(&pres, &tmp);
-                gzp_request_read(GZP_OSR_PRES_128X, GZP_OSR_TEMP_8X);
-
-                perfcount = 0;
-                uint32_t pressure = gzp_pressure_pa(pres);
-                volatile uint32_t altitude = atm_pressure_alt(pressure, param->base_pres);
-
-                // P1OUT ^= blink;
+                flight_step();
                 wakeup &= ~WAKE_TICK;
             }
         } while(wakeup);
