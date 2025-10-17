@@ -5,6 +5,7 @@
 
 extern int16_t kalman_state[3];
 
+void flight_init();
 void flight_step();
 
 #endif

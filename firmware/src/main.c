@@ -10,16 +10,18 @@
 #include "commands.h"
 #include "flight_logic.h"
 #include "gzp6816d.h"
+#include "pins.h"
 
 int main(void) {
     config_clock();
     config_io();
 
+    P1OUT &= ~P_LED;
+
     __eint();
 
     i2c_init(USIDIV_4, USISSEL_2); // SMCLK/16 = 1MHz Fast+
-
-    gzp_request_read(GZP_OSR_PRES_8X, GZP_OSR_TEMP_4X);
+    flight_init();
 
     __dint();
     config_tick();

@@ -85,8 +85,9 @@ void owi_transfer() {
             break;
         case XFER_EEPROM_DUMP:
             eep_read(0b111, *(uint16_t*) addr_buf, databuf, 64);
-            owi_receive(databuf, 64);
-            xfer_done_event = XFER_RESELECT;
+            // owi_receive(databuf, 64);
+            // xfer_done_event = XFER_RESELECT;
+            owi_select();
             break;
         default:
             break;

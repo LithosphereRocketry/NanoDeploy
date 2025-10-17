@@ -21,7 +21,7 @@ void log_temp() {
     if(current_frame == fbuf_endptr) current_frame = frame_buf;
 }
 
-void log_flush_temp() {
+void log_flush_temp(uint16_t start_time) {
     /*
     We can use a bit of a trick here by exploiting the EEPROM's page-wrapping
     behavior. We want from current_frame...fbuf_endptr to land starting at 0,
@@ -47,6 +47,9 @@ void log_flush_temp() {
     our write will start on the second page of EEPROM - this is easy with a
     mod-64, which will be optimized as a bitmask.
     */
+    for(unsigned i = 0; i < dbuf_sz/sizeof(struct data_frame); i++) {
+        frame_buf[i].elapsed -= start_time;
+    }
     uint16_t eeprom_wrap_addr = (dbuf_sz - (current_frame - frame_buf) * sizeof(struct data_frame)) % dbuf_sz;
     eep_write_page(0b111, eeprom_wrap_addr, databuf, page_size);
     eeprom_addr = page_size;

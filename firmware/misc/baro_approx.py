@@ -64,7 +64,7 @@ err_tol = 3
 
 # Asymptotic estimate for the number of multiplies required
 def cost_func(ne, nl):
-    return ne**2 + nl**2
+    return ne + nl
 
 # yes this could be done better in numpy, I'm tired
 n_exp_max = 5

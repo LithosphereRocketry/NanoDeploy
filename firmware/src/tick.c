@@ -16,6 +16,7 @@ void config_tick() {
 
 volatile uint8_t tone_pitch = 0xFF;
 volatile uint16_t perfcount = 0;
+volatile uint16_t elapsed = 0;
 
 __attribute__((interrupt(TIMER0_A0_VECTOR))) 
 static void isr_ta0(void) {
@@ -23,6 +24,7 @@ static void isr_ta0(void) {
     perfcount ++;
 
     if(tick_counter == 0) {
+        elapsed ++;
         wakeup |= WAKE_TICK;
         __bic_SR_register_on_exit(SLEEP_BITS);
         tick_counter = 199; // 40 Hz

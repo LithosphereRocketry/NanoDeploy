@@ -6,7 +6,7 @@
 struct data_frame {
     uint16_t elapsed;
     uint16_t altitude;
-    uint8_t placeholder_state;
+    uint8_t state;
     uint8_t temp;
     uint8_t cont_drogue;
     uint8_t cont_main;
@@ -26,7 +26,7 @@ void log_temp();
  * buffer has occurred; otherwise a small amount of garbage data may be
  * recorded.
  */
-void log_flush_temp();
+void log_flush_temp(uint16_t start_time);
 
 /**
  * Log the data stored in the current frame. Will accumulate data until the
