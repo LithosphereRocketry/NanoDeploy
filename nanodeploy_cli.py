@@ -3,7 +3,7 @@ import typing
 import serial
 import serial.serialutil
 import argparse
-
+import tqdm
 
 import nano_owi_bridge as owi
 from nanodeploy import *
@@ -31,10 +31,8 @@ def cmd_quit(*_: list[str]):
     exit(0)
 
 def cmd_list(*_: list[str]):
-    if config is None:
-        print("No configuration loaded")
-    else:
-        print(config)
+    ensure_cfg()
+    print(config)
 
 def cmd_port(*args: str):
     global port
@@ -44,14 +42,14 @@ def cmd_port(*args: str):
     try:
         port = serial.Serial(args[0], 115200)
         print(f"Using port {args[0]}")
-    except serial.serialutil.SerialException:
+    except serial.SerialException:
         print(f"Couldn't open port {args[0]}")
             
 def write_default(dev_id: DeviceID, name: str):
-    default_config = Config.make_default(dev_id, name)
+    default_config = Config(dev_id, name)
     write_config(port, bytes(default_config))
 
-def prompt_id(prev: DeviceID = None) -> DeviceID:
+def prompt_id(prev: typing.Optional[DeviceID] = None) -> DeviceID:
     if prev is not None:
         hwver = getval("Hardware revision?", int, prev.hwver)
         fwver = getval("Firmware revision?", int, prev.hwver)
@@ -67,8 +65,11 @@ def cmd_dump(*args: str):
         print("Not enough arguments to dump command")
         return
     cmd_read()
+    if port is None:
+        return
+    print("Downloading flight data...")
     with open(args[0], "w") as f:
-        f.write(read_data(port))
+        f.write(read_data(port, tqdm.tqdm))
     print(f"Wrote data to {args[0]}")
 
 def cmd_read(*_: list[str]):
@@ -108,8 +109,7 @@ def cmd_read(*_: list[str]):
         print("Failed to write default config!")
         return
     config = new_config
-    print("== Loaded configuration ==")
-    print(config)
+    print("Read configuration data from device")
 
 def cmd_write(*_: list[str]):
     if port is None:
@@ -126,46 +126,31 @@ def cmd_write(*_: list[str]):
     write_config(port, bytes(config))
     print("Saved configuration to device")
 
-def cmd_set_id(*_: list[str]):
+def ensure_cfg() -> bool:
     global config
+    if config is None and port is not None:
+        print("No config loaded, pulling from device")
+        cmd_read()
     if config is None:
         print("No config loaded, creating a default config")
         name = getval("Name?", str)
-        config = Config.make_default(prompt_id(None), name)
-    else:
+        config = Config(prompt_id(None), name)
+        return True
+    return False
+
+def cmd_set_id(*_: list[str]):
+    if not ensure_cfg():
         config.id = prompt_id(config.id)
 
 def cmd_set_name(*_: list[str]):
-    global config
-    if config is None:
-        print("No config loaded, creating a default config")
-        name = getval("Name?", str)
-        config = Config.make_default(prompt_id(None), name)
-    else:
+    if not ensure_cfg():
         name = getval("Name?", str, config.name)
         config.name = name
 
-def cmd_edit(*_: list[str]):
-    if config is None:
-        print("No config loaded, pulling from device")
-        cmd_read()
-    if config is None:
-        print("Couldn't load default config")
-    else:
-        config.base_pres = getval("New base pressure:", int, config.base_pres)
-
 def cmd_load(*args: list[str]):
     global port
-    if len(args) < 1:
-        print("Not enough arguments to load command")
-        return
-    if config is None:
-        print("No config loaded, pulling from device")
-        cmd_read()
-    if config is None:
-        print("Couldn't load default config")
-    else:
-        config.load_config(args[0])
+    ensure_cfg()
+    config.load_config(args[0])
 
 def cmd_save(*args: list[str]):
     global port
@@ -179,7 +164,9 @@ def cmd_save(*args: list[str]):
 
 def cmd_default(*_: list[str]):
     global config
-    config = Config.make_default(config.id, config.name)
+    ensure_cfg()
+    config = Config(config.id, config.name)
+    print("Loaded default parameters")
 
 commands: dict[str, tuple[str, typing.Callable[..., None]]] = {
     "help": ("Prints this help file", cmd_help),
@@ -193,12 +180,11 @@ commands: dict[str, tuple[str, typing.Callable[..., None]]] = {
     "setid": ("Sets a new OneWire id for the device", cmd_set_id),
     "setname": ("Sets a new name for the device", cmd_set_name),
     "load": ("Loads flight parameters from file", cmd_load),
-    "save": ("Saves flight parameters to file", cmd_save),
-    "edit": ("Edits the flight configuration parameters", cmd_edit)
+    "save": ("Saves flight parameters to file", cmd_save)
 }
 
-port: serial.Serial = None
-config: Config = None
+port: typing.Optional[serial.Serial] = None
+config: typing.Optional[Config] = None
 
 def handle_cmd(inp: str):
     cmd, *args = inp.split()
@@ -214,12 +200,19 @@ def main():
         description="Configuration tool for NanoDeploy altimeter."
     )
     parser.add_argument("port", nargs='?', default=None, help="Serial port to search for device on")
-    parser.add_argument("-r", "--run-command", default=None, help="Run a single command rather than running interactively")
+    run_group = parser.add_mutually_exclusive_group()
+    run_group.add_argument("-r", "--run-command", nargs="+", default=None, help="Run one or more commands rather than running interactively")
+    run_group.add_argument("-R", "--run-file", default=None, help="Run one or more commands from a file rather than running interactively")
     args = parser.parse_args()
     if args.port is not None:
         cmd_port(args.port)
     if args.run_command is not None:
-        handle_cmd(args.run_command)
+        for cmd in args.run_command:
+            handle_cmd(cmd)
+    elif args.run_file is not None:
+        with open(args.run_file) as f:
+            for line in f:
+                handle_cmd(line)
     else:
         while True:
             try:

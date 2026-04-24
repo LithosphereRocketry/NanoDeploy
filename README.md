@@ -7,23 +7,8 @@ operations are handled by that folder's Makefile.
 
 ### Build environment setup
 
-* Install `gcc-msp430` and `gdb-msp430`.
-* Install `mspdebug`. (The version on the apt repos didn't work for me, but building from source did)
-* Find a way to acquire `libmsp430.so`. The easiest way is by using the one from
-  a Code Composer Studio install. Alternatively, you can build it from source 
-  available here: https://www.ti.com/tool/MSPDS#downloads - see below.
-
-### Building libmsp430.so from source: a cavalcade of woes
-
-This specifically applies to building on Linux, but I wouldn't be shocked if
-similar problems exist on other platforms.
-
-* TI's build setup is fairly atrocious. You have to manually copy object files
-  (not .so or .a, .o) around as part of a normal install.
-* The repo link for hidapi is no longer maintained. As of writing, use the
-  libusb repo instead as it actually works.
-* In newer versions of hidapi, hid-libusb.o is now hidapi/libusb/hid.o. Renaming
-  the file to what TI expects seems to link fine.
+The setup process for TI's MSP430 toolchain is pretty miserable on modern Linux.
+See firmware/install-notes.md for details.
 
 ### Uploading
 

@@ -7,7 +7,7 @@ struct data_frame {
     uint16_t elapsed;
     uint16_t altitude;
     uint8_t state;
-    uint8_t temp;
+    uint8_t batt;
     uint8_t cont_drogue;
     uint8_t cont_main;
 } __attribute__((packed));

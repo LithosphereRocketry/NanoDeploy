@@ -11,6 +11,7 @@
 #include "logging.h"
 #include "tick.h"
 #include "params.h"
+#include "adc.h"
 
 #include "generated/kalman_step.h"
 
@@ -22,14 +23,18 @@ int16_t kalman_state[] = {0, 0, 0};
 static uint8_t log_counter = 0;
 static uint8_t state_counter = 0;
 
+static inline uint8_t cont_encode(uint16_t adc) {
+    return adc > 0xFE ? 0xFF : adc;
+}
+
 static inline void store_log(uint8_t delay, bool tmp) {
     if(log_counter == 0) {
         current_frame->elapsed = elapsed;
         current_frame->altitude = kalman_state[0];
         current_frame->state = flight_state;
-        current_frame->temp = 0xFF;
-        current_frame->cont_drogue = 0xFF;
-        current_frame->cont_main = 0xFF;
+        current_frame->batt = adc_buf[5] >> 8;
+        current_frame->cont_drogue = cont_encode(adc_buf[3]);
+        current_frame->cont_main = cont_encode(adc_buf[0]);
         log_counter = delay;
         if(tmp) log_temp(); else log_store();
     } else {
@@ -38,6 +43,8 @@ static inline void store_log(uint8_t delay, bool tmp) {
 }
 
 void flight_init() {
+    adc_init();
+    adc_start();
     gzp_request_read(GZP_OSR_PRES_8X, GZP_OSR_TEMP_4X);
 }
 
@@ -118,4 +125,5 @@ void flight_step() {
             default: break; // should be unreachable
         }
     }
+    adc_start();
 }
