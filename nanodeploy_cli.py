@@ -194,6 +194,8 @@ def handle_cmd(inp: str):
             func(*args)
         except KeyboardInterrupt:
             print()
+    else:
+        print(f"Unknown command {cmd}")
 
 def main():
     parser = argparse.ArgumentParser(
