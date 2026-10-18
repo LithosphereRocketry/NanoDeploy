@@ -1,5 +1,7 @@
 # NanoDeploy
 
+## NOTE: This repository is archived. Further development will continue at https://codeberg.org/scrapbry/NanoDeploy
+
 ## Firmware
 
 Firmware for NanoDeploy is located in the `firmware` directory. Most day-to-day
